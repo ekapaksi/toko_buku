@@ -66,13 +66,16 @@ class SaleController extends Controller
 
             // Ambil ID invoice dari session
             $invoiceNumber = $request->invoice_number; // atau $request->invoice_number
-
+            $tunai = $request->tunai;
+            $kembalian = $tunai - $cartTotal;
             $sale = Sale::where('invoice_number', $invoiceNumber)->firstOrFail();
 
             // Update total dan waktu penjualan
             Sale::where('invoice_number', $invoiceNumber)->update([
                 'total' => $cartTotal,
                 'sold_at' => now(),
+                'payment_amount' => $tunai,
+                'payment_change' => $kembalian,
             ]);
 
             foreach ($cartItems as $item) {
@@ -90,15 +93,16 @@ class SaleController extends Controller
                     'book_id' => $book->id,
                     'quantity' => $item->qty,
                     'total_price' => $item->price * $item->qty,
-                    'user_buat' => Auth::user()->name
+                    'user_buat' => Auth::user()->name,
                 ]);
             }
 
             Cart::destroy();
             session()->forget('invoice_number'); // Bersihkan setelah selesai
         });
+        return redirect()->route('checkout.success', ['invoice' => $request->invoice_number]);
 
-        return redirect()->route('sales.pos')->with('success', 'Transaksi berhasil diproses');
+        // return redirect()->route('sales.pos')->with('success', 'Transaksi berhasil diproses');
     }
     public function generateInvoice()
     {
@@ -115,4 +119,41 @@ class SaleController extends Controller
 
         return redirect()->route('sales.pos')->with('success', 'Invoice berhasil dibuat');
     }
+    public function printStruk($invoice_number)
+    {
+        $items = SaleItem::with('book')->where('invoice_number', $invoice_number)->get();
+        error_log(print_r($items,TRUE));
+    
+        if ($items->isEmpty()) {
+            abort(404);
+        }
+    
+        $sale = Sale::where('invoice_number', $invoice_number)->first();
+    
+        $kasir = Auth::user()->name ? Auth::user()->name : 'Guest';
+    
+        $transaction = [];
+    
+        foreach ($items as $item) {
+            $transaction[] = [
+                'judul' => $item->book->title,
+                'qty' => $item->quantity,
+                'price' => $item->book->price,
+                'subtotal' => $sale->total,
+                'pembayaran' => $sale->payment_amount,
+                'kembalian' => $sale->payment_change,
+                'invoice_time' => $sale->sold_at,
+                'id' => $sale->invoice_number,
+                'kasir' => $kasir,
+            ];
+        }
+    
+        $data = ['transaction' => $transaction];
+    
+        return view('sales.print_struk', compact('data'));
+    }
+    public function checkoutSuccess($invoice)
+{
+    return view('sales.checkout_success', ['invoice' => $invoice]);
+}
 }

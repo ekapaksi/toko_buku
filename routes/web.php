@@ -14,6 +14,10 @@ Route::post('login', [AuthController::class, 'login'])->name('login.post');
 Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/kiosk', [KioskController::class, 'index']);
 Route::post('/kiosk/search', [KioskController::class, 'search']);
+Route::get('/sales/print/{invoice}', [SaleController::class, 'printStruk'])->name('sales.print');
+Route::get('/checkout/success/{invoice}', [SaleController::class, 'checkoutSuccess'])->name('checkout.success');
+
+
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware('auth')->name('dashboard');
@@ -38,6 +42,7 @@ Route::middleware(['auth'])->group(function () {
     // POS ROUTES (Admin & Kasir)
     Route::middleware('can:access-pos')->group(function () {
         Route::get('sales/pos', [SaleController::class, 'pos'])->name('sales.pos');
+        // Route::get('sales/print-struk/{invoice_number}', [SaleController::class, 'printStruk'])->name('sales.print-struk');
         Route::post('sales/pos', [SaleController::class, 'processSale'])->name('sales.pos.process');
         Route::post('sales/add', [SaleController::class, 'addToCart'])->name('sales.add');
         Route::post('sales/remove/{rowId}', [SaleController::class, 'removeItem'])->name('sales.remove');

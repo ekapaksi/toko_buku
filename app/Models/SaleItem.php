@@ -14,6 +14,7 @@ class SaleItem extends Model
         'book_id',
         'quantity',
         'total_price',
+        'tunai',
         'user_buat', 
         'user_edit',
     ];

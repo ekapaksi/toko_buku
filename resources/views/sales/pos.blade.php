@@ -153,6 +153,12 @@
                     </div>
                 </div>
             </form>
+            @if(session('print_invoice'))
+            <script>
+                window.open("{{ route('sales.print', session('print_invoice')) }}", '_blank');
+            </script>
+        @endif
+            
     </div>
 
     <script>
