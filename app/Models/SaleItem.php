@@ -14,6 +14,8 @@ class SaleItem extends Model
         'book_id',
         'quantity',
         'total_price',
+        'user_buat', 
+        'user_edit',
     ];
 
     public function sale()

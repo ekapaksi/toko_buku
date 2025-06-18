@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Book;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class BookController extends Controller
@@ -12,20 +13,20 @@ class BookController extends Controller
     use AuthorizesRequests;
     public function index()
     {
-        $books = Book::all(); 
+        $books = Book::all();
         return view('books.index', compact('books'));
     }
 
     public function create()
     {
-        $this->authorize('manage-books'); 
+        $this->authorize('manage-books');
         return view('books.create');
     }
-    
+
     public function store(Request $request)
     {
         $this->authorize('manage-books');
-    
+
         $data = $request->validate([
             'title' => 'required|string|max:255',
             'author' => 'nullable|string|max:255',
@@ -33,9 +34,9 @@ class BookController extends Controller
             'stock' => 'required|integer|min:0',
             'description' => 'nullable|string',
         ]);
-    
+        $data['user_buat'] = Auth::user()->name;
         Book::create($data);
-    
+
         return redirect()->route('books.index')->with('success', 'Book created successfully');
     }
 
@@ -58,7 +59,7 @@ class BookController extends Controller
             'stock' => 'required|integer|min:0',
             'description' => 'nullable|string',
         ]);
-
+        $data['user_edit'] = Auth::user()->name;
         $book->update($data);
 
         return redirect()->route('books.index')->with('success', 'Book updated successfully');

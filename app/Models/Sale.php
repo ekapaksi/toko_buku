@@ -13,6 +13,8 @@ class Sale extends Model
         'invoice_number',
         'total',
         'sold_at',
+        'user_buat', 
+        'user_edit',
         // tambahkan kolom lain jika perlu
     ];
     public function user()
